@@ -582,6 +582,7 @@
                 },
                 hindrances: [],
                 edges: document.querySelector('#edges-list textarea').value,
+                edgesList: [], // Store dynamic edge inputs
                 advances: [], // indices of checked boxes
                 weapons: [],
                 powers: [],
@@ -609,6 +610,10 @@
             // Hindrances
             const hindInputs = document.querySelectorAll('#hindrances-list input');
             hindInputs.forEach(input => data.hindrances.push(input.value));
+
+            // Edges (Dynamic Inputs)
+            const edgeInputs = document.querySelectorAll('#edges-list input');
+            edgeInputs.forEach(input => data.edgesList.push(input.value));
 
             // Weapons
             const wepRows = document.querySelectorAll('.weapon-row');
@@ -683,7 +688,15 @@
                 data.hindrances.forEach(h => addListItem('hindrances-list', h));
             }
             
+            // Edges: Reset container to just the textarea then add list items
+            document.getElementById('edges-list').innerHTML = `
+                <textarea class="w-full bg-transparent border border-stone-300 p-1 text-sm h-32 resize-none" placeholder="Ancestry Abilities: ...&#10;&#10;Class Abilities: ..."></textarea>
+            `;
             document.querySelector('#edges-list textarea').value = data.edges || "";
+            
+            if(data.edgesList) {
+                data.edgesList.forEach(e => addListItem('edges-list', e));
+            }
             
             if(data.weapons) {
                 data.weapons.forEach(w => addWeapon(w));
