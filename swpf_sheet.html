@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SWPF Character Sheet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Lato', sans-serif; background-color: #f3f4f6; }
+        h1, h2, h3, .header-font { font-family: 'Cinzel', serif; }
+        
+        .die-icon { cursor: pointer; user-select: none; transition: transform 0.1s; }
+        .die-icon:active { transform: scale(0.9); }
+        
+        .track-box {
+            width: 1.5rem; height: 1.5rem; border: 2px solid #4b5563; 
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; margin-right: 0.25rem; font-weight: bold; font-size: 0.8rem;
+            background-color: white;
+        }
+        .track-box.active { background-color: #dc2626; color: white; border-color: #991b1b; }
+        
+        .paper-bg {
+            background-color: #fdfbf7;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23d4c5a6' fill-opacity='0.15' fill-rule='evenodd'/%3E%3C/svg%3E");
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .input-underline {
+            background: transparent;
+            border-bottom: 1px solid #4b5563;
+            width: 100%;
+            padding: 2px 5px;
+            outline: none;
+        }
+        .input-underline:focus { border-bottom: 2px solid #b91c1c; }
+
+        .section-header {
+            background-color: #7f1d1d;
+            color: #fef2f2;
+            padding: 0.25rem 0.5rem;
+            text-transform: uppercase;
+            font-weight: bold;
+            font-family: 'Cinzel', serif;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+            border-radius: 2px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Die Shape Placeholders */
+        .die-d4 { clip-path: polygon(50% 0%, 0% 100%, 100% 100%); background: #e5e7eb; color: #1f2937; }
+        .die-d6 { clip-path: inset(0 0 0 0); background: #e5e7eb; color: #1f2937; }
+        .die-d8 { clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); background: #e5e7eb; color: #1f2937; }
+        .die-d10 { clip-path: polygon(50% 0%, 100% 35%, 50% 100%, 0% 35%); background: #e5e7eb; color: #1f2937; }
+        .die-d12 { clip-path: polygon(50% 0%, 95% 25%, 95% 75%, 50% 100%, 5% 75%, 5% 25%); background: #e5e7eb; color: #1f2937; }
+        
+        .die-display {
+            width: 2rem; height: 2rem; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body class="p-2 md:p-8 min-h-screen">
+
+    <div class="max-w-6xl mx-auto paper-bg p-3 md:p-6 rounded-lg border border-stone-300 relative">
+        <!-- Header -->
+        <header class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-6 border-b-2 border-stone-800 pb-4">
+            <div class="md:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
+                <div class="sm:col-span-2">
+                    <label class="text-xs font-bold text-stone-600 uppercase">Name</label>
+                    <input type="text" id="charName" class="input-underline text-xl font-bold header-font" placeholder="Character Name">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-stone-600 uppercase">Ancestry</label>
+                    <input type="text" id="charAncestry" class="input-underline" placeholder="Human">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-stone-600 uppercase">Class</label>
+                    <input type="text" id="charClass" class="input-underline" placeholder="Fighter">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-stone-600 uppercase">Height/Weight</label>
+                    <input type="text" id="charHtWt" class="input-underline">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-stone-600 uppercase">Rank</label>
+                    <select id="charRank" class="input-underline bg-transparent">
+                        <option>Novice</option>
+                        <option>Seasoned</option>
+                        <option>Veteran</option>
+                        <option>Heroic</option>
+                        <option>Legendary</option>
+                    </select>
+                </div>
+            </div>
+            <div class="md:col-span-4 flex flex-col justify-center items-center border-l-0 md:border-l border-stone-300 pt-4 md:pt-0 md:pl-4">
+                <h1 class="text-2xl md:text-3xl font-bold text-red-900 text-center leading-none mb-2">SAVAGE PATHFINDER</h1>
+                <div class="flex gap-4 w-full">
+                    <div class="flex-1 text-center border-2 border-stone-800 rounded p-1">
+                        <label class="block text-xs font-bold uppercase">Bennies</label>
+                        <input type="number" id="charBennies" class="w-full text-center text-2xl font-bold bg-transparent outline-none" value="3">
+                    </div>
+                    <div class="flex-1 text-center border-2 border-stone-800 rounded p-1">
+                        <label class="block text-xs font-bold uppercase">Conviction</label>
+                        <input type="checkbox" id="charConviction" class="w-6 h-6 mt-1 accent-red-700">
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- COLUMN 1: Attributes & Skills -->
+            <div class="flex flex-col gap-6">
+                
+                <!-- Attributes -->
+                <div>
+                    <div class="section-header">Attributes</div>
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between border-b border-stone-200 py-1">
+                            <span class="font-bold w-24">AGILITY</span>
+                            <div class="die-display die-d4" id="attr-agility-display" onclick="cycleDie('attr-agility')">d4</div>
+                            <input type="hidden" id="attr-agility" value="4">
+                        </div>
+                        <div class="flex items-center justify-between border-b border-stone-200 py-1">
+                            <span class="font-bold w-24">SMARTS</span>
+                            <div class="die-display die-d4" id="attr-smarts-display" onclick="cycleDie('attr-smarts')">d4</div>
+                            <input type="hidden" id="attr-smarts" value="4">
+                        </div>
+                        <div class="flex items-center justify-between border-b border-stone-200 py-1">
+                            <span class="font-bold w-24">SPIRIT</span>
+                            <div class="die-display die-d4" id="attr-spirit-display" onclick="cycleDie('attr-spirit')">d4</div>
+                            <input type="hidden" id="attr-spirit" value="4">
+                        </div>
+                        <div class="flex items-center justify-between border-b border-stone-200 py-1">
+                            <span class="font-bold w-24">STRENGTH</span>
+                            <div class="die-display die-d4" id="attr-strength-display" onclick="cycleDie('attr-strength')">d4</div>
+                            <input type="hidden" id="attr-strength" value="4">
+                        </div>
+                        <div class="flex items-center justify-between border-b border-stone-200 py-1">
+                            <span class="font-bold w-24">VIGOR</span>
+                            <div class="die-display die-d4" id="attr-vigor-display" onclick="cycleDie('attr-vigor')">d4</div>
+                            <input type="hidden" id="attr-vigor" value="4">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Skills -->
+                <div>
+                    <div class="section-header">
+                        <span>Skills</span>
+                        <button onclick="addSkill()" class="text-xs bg-red-800 hover:bg-red-700 px-2 py-1 rounded"><i class="fas fa-plus"></i></button>
+                    </div>
+                    <div id="skills-container" class="space-y-1">
+                        <!-- Core Skills Default -->
+                        <div class="flex items-center gap-2">
+                            <input type="text" value="Athletics (Ag)" class="input-underline flex-1 bg-transparent text-sm" readonly>
+                            <div class="die-display die-d4 cursor-pointer text-xs" onclick="cycleDieSibling(this)">d4</div>
+                            <input type="hidden" id="skill-athletics" class="skill-val" value="4">
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="text" value="Common Know. (Sm)" class="input-underline flex-1 bg-transparent text-sm" readonly>
+                            <div class="die-display die-d4 cursor-pointer text-xs" onclick="cycleDieSibling(this)">d4</div>
+                            <input type="hidden" id="skill-common" class="skill-val" value="4">
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="text" value="Notice (Sm)" class="input-underline flex-1 bg-transparent text-sm" readonly>
+                            <div class="die-display die-d4 cursor-pointer text-xs" onclick="cycleDieSibling(this)">d4</div>
+                            <input type="hidden" id="skill-notice" class="skill-val" value="4">
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="text" value="Persuasion (Sp)" class="input-underline flex-1 bg-transparent text-sm" readonly>
+                            <div class="die-display die-d4 cursor-pointer text-xs" onclick="cycleDieSibling(this)">d4</div>
+                            <input type="hidden" id="skill-persuasion" class="skill-val" value="4">
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="text" value="Stealth (Ag)" class="input-underline flex-1 bg-transparent text-sm" readonly>
+                            <div class="die-display die-d4 cursor-pointer text-xs" onclick="cycleDieSibling(this)">d4</div>
+                            <input type="hidden" id="skill-stealth" class="skill-val" value="4">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- COLUMN 2: Stats, Edges, Hindrances -->
+            <div class="flex flex-col gap-6">
+                
+                <!-- Derived Stats -->
+                <div class="grid grid-cols-3 gap-2">
+                    <div class="text-center border border-stone-400 p-2 rounded bg-white">
+                        <label class="block text-xs font-bold uppercase text-stone-500">Pace</label>
+                        <input type="number" id="derived-pace" class="w-full text-center font-bold text-xl outline-none" value="6">
+                    </div>
+                    <div class="text-center border border-stone-400 p-2 rounded bg-white">
+                        <label class="block text-xs font-bold uppercase text-stone-500">Parry</label>
+                        <input type="number" id="derived-parry" class="w-full text-center font-bold text-xl outline-none" value="2">
+                    </div>
+                    <div class="text-center border border-stone-400 p-2 rounded bg-white">
+                        <label class="block text-xs font-bold uppercase text-stone-500">Toughness</label>
+                        <div class="flex items-center justify-center">
+                            <input type="number" id="derived-toughness" class="w-10 text-center font-bold text-xl outline-none" value="4">
+                            <span class="text-stone-400 text-sm">(</span>
+                            <input type="number" id="derived-armor" class="w-8 text-center text-sm outline-none text-stone-500" placeholder="Arm">
+                            <span class="text-stone-400 text-sm">)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hindrances -->
+                <div>
+                    <div class="section-header">
+                        <span>Hindrances</span>
+                        <button onclick="addListItem('hindrances-list')" class="text-xs bg-red-800 hover:bg-red-700 px-2 py-1 rounded"><i class="fas fa-plus"></i></button>
+                    </div>
+                    <div id="hindrances-list" class="space-y-1">
+                        <input type="text" class="input-underline w-full" placeholder="Major...">
+                        <input type="text" class="input-underline w-full" placeholder="Minor...">
+                        <input type="text" class="input-underline w-full" placeholder="Minor...">
+                    </div>
+                </div>
+
+                <!-- Edges & Abilities -->
+                <div>
+                    <div class="section-header">
+                        <span>Edges & Abilities</span>
+                        <button onclick="addListItem('edges-list')" class="text-xs bg-red-800 hover:bg-red-700 px-2 py-1 rounded"><i class="fas fa-plus"></i></button>
+                    </div>
+                    <div id="edges-list" class="space-y-1">
+                        <textarea class="w-full bg-transparent border border-stone-300 p-1 text-sm h-32 resize-none" placeholder="Ancestry Abilities: ...&#10;&#10;Class Abilities: ..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Advances Track -->
+                <div class="bg-white p-2 border border-stone-300 rounded text-xs">
+                    <div class="font-bold text-center mb-1 uppercase tracking-widest text-stone-500">Advances</div>
+                    <div class="grid grid-cols-4 gap-1 text-center">
+                        <div class="cursor-pointer hover:bg-stone-200" onclick="toggleCheck(this)">N1</div>
+                        <div class="cursor-pointer hover:bg-stone-200" onclick="toggleCheck(this)">N2</div>
+                        <div class="cursor-pointer hover:bg-stone-200" onclick="toggleCheck(this)">N3</div>
+                        <div class="cursor-pointer hover:bg-stone-200" onclick="toggleCheck(this)">S1</div>
+                        <div class="cursor-pointer hover:bg-stone-200" onclick="toggleCheck(this)">S2</div>
+                        <div class="cursor-pointer hover:bg-stone-200" onclick="toggleCheck(this)">S3</div>
+                        <div class="cursor-pointer hover:bg-stone-200" onclick="toggleCheck(this)">S4</div>
+                        <div class="cursor-pointer hover:bg-stone-200" onclick="toggleCheck(this)">V1</div>
+                        <div class="cursor-pointer hover:bg-stone-200" onclick="toggleCheck(this)">V2</div>
+                        <div class="cursor-pointer hover:bg-stone-200" onclick="toggleCheck(this)">V3</div>
+                        <div class="cursor-pointer hover:bg-stone-200" onclick="toggleCheck(this)">V4</div>
+                        <div class="cursor-pointer hover:bg-stone-200" onclick="toggleCheck(this)">H1</div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- COLUMN 3: Gear, Powers, Health -->
+            <div class="flex flex-col gap-6">
+
+                <!-- Weapons -->
+                <div>
+                    <div class="section-header">
+                        <span>Weapons</span>
+                        <button onclick="addWeapon()" class="text-xs bg-red-800 hover:bg-red-700 px-2 py-1 rounded"><i class="fas fa-plus"></i></button>
+                    </div>
+                    <div id="weapons-list" class="space-y-2 text-sm">
+                        <!-- Header Row (Hidden on Mobile) -->
+                        <div class="hidden md:grid grid-cols-12 gap-1 font-bold text-xs text-stone-500 text-center">
+                            <div class="col-span-5 text-left">Name</div>
+                            <div class="col-span-2">Dmg</div>
+                            <div class="col-span-2">AP</div>
+                            <div class="col-span-3">Wt/Notes</div>
+                        </div>
+                        <!-- Example Weapon -->
+                        <div class="grid grid-cols-12 gap-1 weapon-row border-b border-stone-200 pb-2 md:border-none md:pb-0">
+                            <input type="text" class="col-span-12 md:col-span-5 input-underline" placeholder="Short Sword">
+                            <input type="text" class="col-span-3 md:col-span-2 input-underline text-center" placeholder="Str+d6">
+                            <input type="text" class="col-span-3 md:col-span-2 input-underline text-center" placeholder="-">
+                            <input type="text" class="col-span-6 md:col-span-3 input-underline text-center" placeholder="2">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Powers -->
+                <div>
+                    <div class="section-header">
+                        <span>Powers</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-normal normal-case">PP:</span>
+                            <input type="number" id="pp-current" class="w-8 h-5 text-center bg-white text-black text-xs rounded" placeholder="Max">
+                            <span class="text-xs">/</span>
+                            <input type="number" id="pp-max" class="w-8 h-5 text-center bg-white text-black text-xs rounded" placeholder="Cur">
+                            <button onclick="addPower()" class="text-xs bg-red-800 hover:bg-red-700 px-2 py-1 rounded ml-1"><i class="fas fa-plus"></i></button>
+                        </div>
+                    </div>
+                    <div id="powers-list" class="space-y-2 text-sm">
+                         <!-- Header Row (Hidden on Mobile) -->
+                        <div class="hidden md:grid grid-cols-12 gap-1 font-bold text-xs text-stone-500 text-center">
+                            <div class="col-span-5 text-left">Power</div>
+                            <div class="col-span-2">Cost</div>
+                            <div class="col-span-2">Rng</div>
+                            <div class="col-span-3">Dur</div>
+                        </div>
+                        <!-- Template Power -->
+                        <div class="grid grid-cols-12 gap-1 power-row border-b border-stone-200 pb-2 md:border-none md:pb-0">
+                            <input type="text" class="col-span-12 md:col-span-5 input-underline" placeholder="Bolt">
+                            <input type="text" class="col-span-3 md:col-span-2 input-underline text-center" placeholder="1">
+                            <input type="text" class="col-span-3 md:col-span-2 input-underline text-center" placeholder="Sm">
+                            <input type="text" class="col-span-6 md:col-span-3 input-underline text-center" placeholder="Inst">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gear Text Block -->
+                <div>
+                    <div class="section-header">Gear & Wealth</div>
+                    <textarea id="gear-text" class="w-full bg-white border border-stone-300 p-2 text-sm h-32" placeholder="Backpack, Bedroll, Rations..."></textarea>
+                    <div class="flex justify-end mt-1">
+                        <label class="text-sm font-bold mr-2">Gold:</label>
+                        <input type="text" id="wealth" class="input-underline w-24 text-right" placeholder="500 gp">
+                    </div>
+                </div>
+
+                <!-- Wounds & Fatigue -->
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Wounds -->
+                    <div class="bg-stone-200 p-2 rounded border border-stone-400">
+                        <div class="text-center font-bold text-red-900 mb-2 uppercase">Wounds</div>
+                        <div class="flex flex-col gap-2 items-center">
+                            <div class="flex items-center gap-2">
+                                <div class="track-box" onclick="toggleTrack(this)">-1</div>
+                                <span class="text-xs font-bold text-stone-500">Wound</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="track-box" onclick="toggleTrack(this)">-2</div>
+                                <span class="text-xs font-bold text-stone-500">Wound</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="track-box" onclick="toggleTrack(this)">-3</div>
+                                <span class="text-xs font-bold text-stone-500">Wound</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="track-box" onclick="toggleTrack(this)">
+                                    <i class="fas fa-skull"></i>
+                                </div>
+                                <span class="text-xs font-bold text-red-700">Incap</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fatigue -->
+                    <div class="bg-stone-200 p-2 rounded border border-stone-400">
+                        <div class="text-center font-bold text-yellow-900 mb-2 uppercase">Fatigue</div>
+                        <div class="flex flex-col gap-2 items-center">
+                            <div class="flex items-center gap-2">
+                                <div class="track-box" onclick="toggleTrack(this)">-1</div>
+                                <span class="text-xs font-bold text-stone-500">Fatigue</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="track-box" onclick="toggleTrack(this)">-2</div>
+                                <span class="text-xs font-bold text-stone-500">Fatigue</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="track-box" onclick="toggleTrack(this)">
+                                    <i class="fas fa-bed"></i>
+                                </div>
+                                <span class="text-xs font-bold text-yellow-700">Incap</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <!-- Footer / Data Tools -->
+        <div class="mt-8 border-t-2 border-stone-300 pt-6">
+            <h3 class="text-xl font-bold text-stone-700 mb-4"><i class="fas fa-save mr-2"></i>Data Tools</h3>
+            
+            <!-- Browser Storage -->
+            <div class="mb-6 bg-stone-200 p-4 rounded border border-stone-400">
+                <h4 class="font-bold text-stone-700 mb-2"><i class="fas fa-hdd mr-2"></i>Browser Storage</h4>
+                <p class="text-xs text-stone-600 mb-3">Save your character directly to this browser's memory (LocalStorage) so it persists when you refresh.</p>
+                <div class="flex gap-2">
+                    <button onclick="saveToBrowser()" class="bg-indigo-700 text-white px-4 py-2 rounded hover:bg-indigo-800 text-sm font-bold shadow"><i class="fas fa-download mr-1"></i> Save to Browser</button>
+                    <button onclick="loadFromBrowser()" class="bg-indigo-700 text-white px-4 py-2 rounded hover:bg-indigo-800 text-sm font-bold shadow"><i class="fas fa-upload mr-1"></i> Load from Browser</button>
+                </div>
+            </div>
+
+            <h4 class="font-bold text-stone-700 mb-2"><i class="fas fa-file-code mr-2"></i>Text Block Import/Export</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <p class="text-sm text-stone-600 mb-2">
+                        To <strong>Backup</strong>: Click "Generate Save Code", copy the text below, and save it to a file.
+                        <br>
+                        To <strong>Restore</strong>: Paste your save code below and click "Load from Code".
+                    </p>
+                    <div class="flex gap-2 mb-2">
+                        <button onclick="exportData()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm font-bold shadow">Generate Save Code</button>
+                        <button onclick="importData()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm font-bold shadow">Load from Code</button>
+                    </div>
+                </div>
+                <div>
+                    <textarea id="data-block" class="w-full h-24 border border-stone-400 p-2 font-mono text-xs rounded shadow-inner" placeholder="Paste character string here..."></textarea>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- Die Logic ---
+        const dieTypes = [4, 6, 8, 10, 12];
+        
+        function getDieClass(val) {
+            return `die-d${val}`;
+        }
+
+        function cycleDie(inputId, isSkill = false) {
+            const input = document.getElementById(inputId);
+            const display = document.getElementById(inputId + (isSkill ? "" : "-display")); // Logic differs slightly for skills dynamically added
+            
+            // If it's a dynamic skill, we might need to find the display element differently
+            let displayEl = display;
+            if(!displayEl && isSkill) {
+                // For dynamic skills, the display is the previous sibling usually or we traverse
+                // But specifically for the hardcoded ones, I set IDs. For dynamic ones, we'll handle differently.
+                // Let's rely on DOM traversal for dynamic skills
+                const parent = input.parentElement;
+                displayEl = parent.querySelector('.die-display');
+            }
+
+            let currentVal = parseInt(input.value);
+            let currentIndex = dieTypes.indexOf(currentVal);
+            
+            // Cycle
+            let nextIndex = (currentIndex + 1) % dieTypes.length;
+            let nextVal = dieTypes[nextIndex];
+            
+            // Update State
+            input.value = nextVal;
+            
+            // Update UI
+            if(displayEl) {
+                displayEl.innerText = "d" + nextVal;
+                // Remove old classes
+                dieTypes.forEach(d => displayEl.classList.remove(`die-d${d}`));
+                // Add new class
+                displayEl.classList.add(`die-d${nextVal}`);
+            }
+        }
+
+        // --- Dynamic Lists ---
+
+        function addSkill(name="", val=4) {
+            const container = document.getElementById('skills-container');
+            const id = 'skill-' + Date.now();
+            
+            const div = document.createElement('div');
+            div.className = "flex items-center gap-2 mt-1 group";
+            div.innerHTML = `
+                <input type="text" value="${name}" class="input-underline flex-1 bg-transparent text-sm" placeholder="New Skill">
+                <div class="die-display die-d${val} cursor-pointer text-xs" onclick="cycleDieSibling(this)">d${val}</div>
+                <input type="hidden" class="skill-val" value="${val}">
+                <button onclick="this.parentElement.remove()" class="text-stone-400 hover:text-red-600 text-xs opacity-0 group-hover:opacity-100 px-1"><i class="fas fa-trash"></i></button>
+            `;
+            container.appendChild(div);
+        }
+
+        // Helper for dynamic skills since IDs are messy
+        function cycleDieSibling(displayEl) {
+            const inputVal = displayEl.nextElementSibling;
+            let currentVal = parseInt(inputVal.value);
+            let currentIndex = dieTypes.indexOf(currentVal);
+            let nextIndex = (currentIndex + 1) % dieTypes.length;
+            let nextVal = dieTypes[nextIndex];
+
+            inputVal.value = nextVal;
+            displayEl.innerText = "d" + nextVal;
+            dieTypes.forEach(d => displayEl.classList.remove(`die-d${d}`));
+            displayEl.classList.add(`die-d${nextVal}`);
+        }
+
+        function addListItem(containerId, value="") {
+            const container = document.getElementById(containerId);
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'input-underline w-full mt-1';
+            input.value = value;
+            input.placeholder = "Item...";
+            // Double click to remove
+            input.ondblclick = function() { if(confirm('Remove this item?')) this.remove(); };
+            input.title = "Double click to remove";
+            container.appendChild(input);
+        }
+
+        function addWeapon(data = {name:'', dmg:'', ap:'', notes:''}) {
+            const container = document.getElementById('weapons-list');
+            const div = document.createElement('div');
+            div.className = "grid grid-cols-12 gap-1 weapon-row group mt-1 border-b border-stone-200 pb-2 md:border-none md:pb-0";
+            div.innerHTML = `
+                <div class="col-span-12 md:col-span-5 relative">
+                    <input type="text" class="input-underline w-full" placeholder="Weapon" value="${data.name}">
+                </div>
+                <input type="text" class="col-span-3 md:col-span-2 input-underline text-center" placeholder="Dmg" value="${data.dmg}">
+                <input type="text" class="col-span-3 md:col-span-2 input-underline text-center" placeholder="AP" value="${data.ap}">
+                <div class="col-span-6 md:col-span-3 flex items-center">
+                    <input type="text" class="input-underline w-full text-center" placeholder="Wt/Notes" value="${data.notes}">
+                    <i class="fas fa-trash text-xs text-stone-300 hover:text-red-600 cursor-pointer ml-1 opacity-0 group-hover:opacity-100" onclick="this.closest('.weapon-row').remove()"></i>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        function addPower(data = {name:'', cost:'', rng:'', dur:''}) {
+            const container = document.getElementById('powers-list');
+            const div = document.createElement('div');
+            div.className = "grid grid-cols-12 gap-1 power-row group mt-1 border-b border-stone-200 pb-2 md:border-none md:pb-0";
+            div.innerHTML = `
+                <div class="col-span-12 md:col-span-5 relative">
+                    <input type="text" class="input-underline w-full" placeholder="Power" value="${data.name}">
+                </div>
+                <input type="text" class="col-span-3 md:col-span-2 input-underline text-center" placeholder="Cost" value="${data.cost}">
+                <input type="text" class="col-span-3 md:col-span-2 input-underline text-center" placeholder="Rng" value="${data.rng}">
+                <div class="col-span-6 md:col-span-3 flex items-center">
+                    <input type="text" class="input-underline w-full text-center" placeholder="Dur" value="${data.dur}">
+                    <i class="fas fa-trash text-xs text-stone-300 hover:text-red-600 cursor-pointer ml-1 opacity-0 group-hover:opacity-100" onclick="this.closest('.power-row').remove()"></i>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        // --- Trackers ---
+        function toggleTrack(el) {
+            el.classList.toggle('active');
+        }
+        
+        function toggleCheck(el) {
+            if(el.style.backgroundColor === 'rgb(50, 50, 50)' || el.style.backgroundColor === '#323232') {
+                el.style.backgroundColor = '';
+                el.style.color = '';
+            } else {
+                el.style.backgroundColor = '#323232'; // stone-800
+                el.style.color = 'white';
+            }
+        }
+
+
+        // --- Import / Export Logic ---
+
+        function getCharacterData() {
+            // Collect Basic Info
+            const data = {
+                header: {
+                    name: document.getElementById('charName').value,
+                    ancestry: document.getElementById('charAncestry').value,
+                    class: document.getElementById('charClass').value,
+                    htWt: document.getElementById('charHtWt').value,
+                    rank: document.getElementById('charRank').value,
+                    bennies: document.getElementById('charBennies').value,
+                    conviction: document.getElementById('charConviction').checked
+                },
+                attributes: {
+                    agility: document.getElementById('attr-agility').value,
+                    smarts: document.getElementById('attr-smarts').value,
+                    spirit: document.getElementById('attr-spirit').value,
+                    strength: document.getElementById('attr-strength').value,
+                    vigor: document.getElementById('attr-vigor').value,
+                },
+                skills: [], // Will iterate
+                derived: {
+                    pace: document.getElementById('derived-pace').value,
+                    parry: document.getElementById('derived-parry').value,
+                    toughness: document.getElementById('derived-toughness').value,
+                    armor: document.getElementById('derived-armor').value,
+                },
+                hindrances: [],
+                edges: document.querySelector('#edges-list textarea').value,
+                advances: [], // indices of checked boxes
+                weapons: [],
+                powers: [],
+                pp: {
+                    cur: document.getElementById('pp-current').value,
+                    max: document.getElementById('pp-max').value
+                },
+                gear: document.getElementById('gear-text').value,
+                wealth: document.getElementById('wealth').value,
+                wounds: [], // indices of active
+                fatigue: [] // indices of active
+            };
+
+            // Skills (Static + Dynamic)
+            // Note: We'll just grab all inputs in skill container
+            const skillContainer = document.getElementById('skills-container');
+            const skillRows = skillContainer.querySelectorAll('.flex');
+            skillRows.forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                const name = inputs[0].value;
+                const val = row.querySelector('.skill-val').value;
+                data.skills.push({name, val});
+            });
+
+            // Hindrances
+            const hindInputs = document.querySelectorAll('#hindrances-list input');
+            hindInputs.forEach(input => data.hindrances.push(input.value));
+
+            // Weapons
+            const wepRows = document.querySelectorAll('.weapon-row');
+            wepRows.forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                data.weapons.push({
+                    name: inputs[0].value,
+                    dmg: inputs[1].value,
+                    ap: inputs[2].value,
+                    notes: inputs[3].value
+                });
+            });
+
+            // Powers
+            const powRows = document.querySelectorAll('.power-row');
+            powRows.forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                data.powers.push({
+                    name: inputs[0].value,
+                    cost: inputs[1].value,
+                    rng: inputs[2].value,
+                    dur: inputs[3].value
+                });
+            });
+            
+            return data;
+        }
+
+        function setCharacterData(data) {
+             // Clear existing dynamic lists
+             document.getElementById('weapons-list').innerHTML = `
+                <div class="hidden md:grid grid-cols-12 gap-1 font-bold text-xs text-stone-500 text-center">
+                    <div class="col-span-5 text-left">Name</div><div class="col-span-2">Dmg</div><div class="col-span-2">AP</div><div class="col-span-3">Wt/Notes</div>
+                </div>`;
+            document.getElementById('powers-list').innerHTML = `
+                <div class="hidden md:grid grid-cols-12 gap-1 font-bold text-xs text-stone-500 text-center">
+                    <div class="col-span-5 text-left">Power</div><div class="col-span-2">Cost</div><div class="col-span-2">Rng</div><div class="col-span-3">Dur</div>
+                </div>`;
+            document.getElementById('skills-container').innerHTML = '';
+            document.getElementById('hindrances-list').innerHTML = '';
+
+            // Header
+            document.getElementById('charName').value = data.header.name || "";
+            document.getElementById('charAncestry').value = data.header.ancestry || "";
+            document.getElementById('charClass').value = data.header.class || "";
+            document.getElementById('charHtWt').value = data.header.htWt || "";
+            document.getElementById('charRank').value = data.header.rank || "Novice";
+            document.getElementById('charBennies').value = data.header.bennies || 3;
+            document.getElementById('charConviction').checked = data.header.conviction || false;
+
+            // Attributes
+            const attrs = data.attributes;
+            updateAttribute('attr-agility', attrs.agility);
+            updateAttribute('attr-smarts', attrs.smarts);
+            updateAttribute('attr-spirit', attrs.spirit);
+            updateAttribute('attr-strength', attrs.strength);
+            updateAttribute('attr-vigor', attrs.vigor);
+
+            // Skills
+            if(data.skills) {
+                data.skills.forEach(s => addSkill(s.name, s.val));
+            }
+
+            // Derived
+            document.getElementById('derived-pace').value = data.derived.pace;
+            document.getElementById('derived-parry').value = data.derived.parry;
+            document.getElementById('derived-toughness').value = data.derived.toughness;
+            document.getElementById('derived-armor').value = data.derived.armor;
+
+            // Lists
+            if(data.hindrances) {
+                data.hindrances.forEach(h => addListItem('hindrances-list', h));
+            }
+            
+            document.querySelector('#edges-list textarea').value = data.edges || "";
+            
+            if(data.weapons) {
+                data.weapons.forEach(w => addWeapon(w));
+            }
+            if(data.powers) {
+                data.powers.forEach(p => addPower(p));
+            }
+
+            document.getElementById('pp-current').value = data.pp.cur;
+            document.getElementById('pp-max').value = data.pp.max;
+            document.getElementById('gear-text').value = data.gear;
+            document.getElementById('wealth').value = data.wealth;
+        }
+
+        function exportData() {
+            const data = getCharacterData();
+            // Encode
+            const json = JSON.stringify(data);
+            const b64 = btoa(encodeURIComponent(json)); // Base64 encoding to make it a block
+            document.getElementById('data-block').value = b64;
+            
+            // Visual feedback
+            const btn = document.querySelector('button[onclick="exportData()"]');
+            const originalText = btn.innerText;
+            btn.innerText = "Code Generated!";
+            setTimeout(() => btn.innerText = originalText, 2000);
+        }
+
+        function importData() {
+            const block = document.getElementById('data-block').value;
+            if(!block) return alert("Please paste a save code first.");
+            
+            try {
+                const json = decodeURIComponent(atob(block));
+                const data = JSON.parse(json);
+                
+                setCharacterData(data);
+
+                alert("Character Loaded Successfully!");
+
+            } catch (e) {
+                console.error(e);
+                alert("Error loading data. The code might be corrupted.");
+            }
+        }
+
+        function saveToBrowser() {
+            const data = getCharacterData();
+            try {
+                localStorage.setItem('swpf_character', JSON.stringify(data));
+                
+                // Visual feedback
+                const btn = document.querySelector('button[onclick="saveToBrowser()"]');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check mr-1"></i> Saved!';
+                setTimeout(() => btn.innerHTML = originalText, 2000);
+                
+            } catch(e) {
+                console.error(e);
+                alert("Failed to save to browser storage. You might be in Incognito mode or storage is full.");
+            }
+        }
+
+        function loadFromBrowser() {
+            const json = localStorage.getItem('swpf_character');
+            if(!json) return alert("No saved character found in this browser.");
+            
+            try {
+                const data = JSON.parse(json);
+                setCharacterData(data);
+                
+                // Visual feedback
+                const btn = document.querySelector('button[onclick="loadFromBrowser()"]');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check mr-1"></i> Loaded!';
+                setTimeout(() => btn.innerHTML = originalText, 2000);
+                
+            } catch(e) {
+                console.error(e);
+                alert("Error loading data from browser memory.");
+            }
+        }
+
+        function updateAttribute(id, val) {
+            const input = document.getElementById(id);
+            input.value = val;
+            const display = document.getElementById(id + "-display");
+            display.innerText = "d" + val;
+            dieTypes.forEach(d => display.classList.remove(`die-d${d}`));
+            display.classList.add(`die-d${val}`);
+        }
+
+    </script>
+</body>
+</html>
