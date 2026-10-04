@@ -242,7 +242,7 @@
                 <!-- Advances Track -->
                 <div class="bg-white p-2 border border-stone-300 rounded text-xs">
                     <div class="font-bold text-center mb-1 uppercase tracking-widest text-stone-500">Advances</div>
-                    <div class="grid grid-cols-4 gap-1 text-center">
+                    <div id="advances-tracker" class="grid grid-cols-4 gap-1 text-center">
                         <div class="cursor-pointer hover:bg-stone-200" onclick="toggleCheck(this)">N1</div>
                         <div class="cursor-pointer hover:bg-stone-200" onclick="toggleCheck(this)">N2</div>
                         <div class="cursor-pointer hover:bg-stone-200" onclick="toggleCheck(this)">N3</div>
@@ -330,7 +330,7 @@
                 <!-- Wounds & Fatigue -->
                 <div class="grid grid-cols-2 gap-4">
                     <!-- Wounds -->
-                    <div class="bg-stone-200 p-2 rounded border border-stone-400">
+                    <div id="wounds-tracker" class="bg-stone-200 p-2 rounded border border-stone-400">
                         <div class="text-center font-bold text-red-900 mb-2 uppercase">Wounds</div>
                         <div class="flex flex-col gap-2 items-center">
                             <div class="flex items-center gap-2">
@@ -355,7 +355,7 @@
                     </div>
 
                     <!-- Fatigue -->
-                    <div class="bg-stone-200 p-2 rounded border border-stone-400">
+                    <div id="fatigue-tracker" class="bg-stone-200 p-2 rounded border border-stone-400">
                         <div class="text-center font-bold text-yellow-900 mb-2 uppercase">Fatigue</div>
                         <div class="flex flex-col gap-2 items-center">
                             <div class="flex items-center gap-2">
@@ -551,6 +551,26 @@
             }
         }
 
+        function getTrackerData(selector, isActive) {
+            return Array.from(document.querySelectorAll(selector))
+                .flatMap((el, index) => isActive(el) ? [index] : []);
+        }
+
+        function restoreTrackers(data) {
+            const advances = Array.isArray(data.advances) ? data.advances : [];
+            document.querySelectorAll('#advances-tracker > div').forEach((el, index) => {
+                el.style.backgroundColor = advances.includes(index) ? '#323232' : '';
+                el.style.color = advances.includes(index) ? 'white' : '';
+            });
+
+            ['wounds', 'fatigue'].forEach(tracker => {
+                const active = Array.isArray(data[tracker]) ? data[tracker] : [];
+                document.querySelectorAll(`#${tracker}-tracker .track-box`).forEach((el, index) => {
+                    el.classList.toggle('active', active.includes(index));
+                });
+            });
+        }
+
 
         // --- Import / Export Logic ---
 
@@ -583,7 +603,8 @@
                 hindrances: [],
                 edges: document.querySelector('#edges-list textarea').value,
                 edgesList: [], // Store dynamic edge inputs
-                advances: [], // indices of checked boxes
+                advances: getTrackerData('#advances-tracker > div', el =>
+                    el.style.backgroundColor === 'rgb(50, 50, 50)' || el.style.backgroundColor === '#323232'),
                 weapons: [],
                 powers: [],
                 pp: {
@@ -592,8 +613,8 @@
                 },
                 gear: document.getElementById('gear-text').value,
                 wealth: document.getElementById('wealth').value,
-                wounds: [], // indices of active
-                fatigue: [] // indices of active
+                wounds: getTrackerData('#wounds-tracker .track-box', el => el.classList.contains('active')),
+                fatigue: getTrackerData('#fatigue-tracker .track-box', el => el.classList.contains('active'))
             };
 
             // Skills (Static + Dynamic)
@@ -709,6 +730,7 @@
             document.getElementById('pp-max').value = data.pp.max;
             document.getElementById('gear-text').value = data.gear;
             document.getElementById('wealth').value = data.wealth;
+            restoreTrackers(data);
         }
 
         function exportData() {
